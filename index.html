@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>SKU Image Finder - Rajnandini Fashion India Ltd.</title>
+  <title>SKU Image Finder</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -24,7 +24,7 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.12);
     }
 
-    /* Branding */
+    /* Branding on LOGIN only (logo, no text) */
     .branding {
       text-align: center;
       margin-bottom: 8px;
@@ -34,14 +34,6 @@
       height: auto;
       display: block;
       margin: 0 auto;
-    }
-    .branding-title {
-      font-size: 18px;
-      margin-top: 10px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #bfa36f;
     }
 
     /* Login Screen */
@@ -78,7 +70,7 @@
       min-height: 18px;
     }
 
-    /* Top Bar */
+    /* Top Bar on search screen */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -100,6 +92,7 @@
       gap: 8px;
       flex-direction: column;
       margin-bottom: 12px;
+      position: relative;
     }
     input, button {
       padding: 10px;
@@ -126,7 +119,7 @@
     /* Suggestions dropdown */
     .suggestions {
       position: absolute;
-      top: 100%;
+      top: 48px;
       left: 0;
       right: 0;
       background: #fff;
@@ -212,8 +205,7 @@
 <div id="login-screen">
   <div class="container">
     <div class="branding">
-      <img src="Rajnandini_Logo_Logo_WHITE_COLOR.jpg">
-      <div class="branding-title">RAJNANDINI FASHION INDIA LTD.</div>
+      <img src="Rajnandini_Logo_Logo_WHITE_COLOR.jpg" alt="Logo">
     </div>
     <h3>Team Login</h3>
 
@@ -261,7 +253,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
 <script>
-  // Firebase configuration (your live config)
+  // Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyD9oebZPuhL8ZngWCb87kY40pzKY9afiQE",
     authDomain: "sku-image-viewer.firebaseapp.com",
@@ -305,8 +297,10 @@
 
   logoutButton.onclick = async () => { await auth.signOut(); };
 
+  // Prevent right-click (casual save)
   document.addEventListener("contextmenu", e => e.preventDefault());
 
+  // SKU data
   let skuData = [];
   let dataLoaded = false;
 
@@ -332,11 +326,12 @@
 
     for (let i = 1; i < lines.length; i++) {
       const p = lines[i].split(",");
+      if (!p[iSKU] || !p[iIMG]) continue;
       skuData.push({
         sku: p[iSKU].trim(),
         imageLink: p[iIMG].trim(),
-        title: p[iTITLE].trim(),
-        category: p[iCAT].trim()
+        title: (p[iTITLE] || "").trim(),
+        category: (p[iCAT] || "").trim()
       });
     }
 
@@ -345,19 +340,33 @@
   }
 
   function highlight(text, q) {
+    if (!text) return "";
     if (!q) return text;
-    const i = text.toLowerCase().indexOf(q.toLowerCase());
-    return i >= 0
-      ? text.substring(0, i) + "<mark>" + text.substring(i, i+q.length) + "</mark>" + text.substring(i+q.length)
-      : text;
+    const lower = text.toLowerCase();
+    const qq = q.toLowerCase();
+    const idx = lower.indexOf(qq);
+    if (idx === -1) return text;
+    return (
+      text.substring(0, idx) +
+      "<mark>" + text.substring(idx, idx + q.length) + "</mark>" +
+      text.substring(idx + q.length)
+    );
   }
 
   function updateSuggestions(q) {
-    if (!q) return suggestionsDiv.style.display = "none";
+    if (!q) {
+      suggestionsDiv.style.display = "none";
+      return;
+    }
 
-    const matches = skuData.filter(i => i.sku.toLowerCase().includes(q.toLowerCase())).slice(0,10);
+    const matches = skuData
+      .filter(i => i.sku.toLowerCase().includes(q.toLowerCase()))
+      .slice(0, 10);
 
-    if (!matches.length) return suggestionsDiv.style.display = "none";
+    if (!matches.length) {
+      suggestionsDiv.style.display = "none";
+      return;
+    }
 
     suggestionsDiv.innerHTML = "";
     matches.forEach(item => {
@@ -381,7 +390,10 @@
     suggestionsDiv.style.display ="none";
 
     if (!dataLoaded) await loadCSV();
-    if (!q) return msg.textContent = "Enter SKU";
+    if (!q) {
+      msg.textContent = "Enter SKU";
+      return;
+    }
 
     const matches = skuData.filter(i => i.sku.toLowerCase().includes(q));
 
@@ -393,11 +405,17 @@
 
       const titleEl = document.createElement("div");
       titleEl.className = "card-title";
-      titleEl.innerHTML = highlight(i.title, q);
+      titleEl.innerHTML = highlight(i.title || i.sku, q);
 
-      const catEl = document.createElement("div");
-      catEl.className = "card-category";
-      catEl.textContent = i.category;
+      if (i.category) {
+        const catEl = document.createElement("div");
+        catEl.className = "card-category";
+        catEl.textContent = i.category;
+        card.appendChild(titleEl);
+        card.appendChild(catEl);
+      } else {
+        card.appendChild(titleEl);
+      }
 
       const skuEl = document.createElement("div");
       skuEl.className = "card-sku";
@@ -412,8 +430,6 @@
       wrap.onclick = () => openModal(i.imageLink);
 
       wrap.appendChild(img);
-      card.appendChild(titleEl);
-      card.appendChild(catEl);
       card.appendChild(skuEl);
       card.appendChild(wrap);
 
@@ -434,7 +450,9 @@
     else updateSuggestions(skuInput.value);
   });
 
-  window.addEventListener("load", loadCSV);
+  window.addEventListener("load", () => {
+    loadCSV().catch(() => { msg.textContent = "Error loading sku_images.csv"; });
+  });
 </script>
 
 </body>
