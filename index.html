@@ -148,7 +148,7 @@
   }
   .suggestion-item:hover { background:#f3f3f3; }
 
-  /* GRID A + SPACELESS + ROUNDED */
+  /* GRID: 2 per row mobile, 3 per row desktop, low gap, rounded cards */
   .results {
     display:grid;
     grid-template-columns:repeat(2,1fr);
@@ -161,20 +161,13 @@
 
   .card {
     background:#fafafa;
-    border: 1.8px solid #bfa36f;   /* elegant gold border */
+    border: 1.8px solid #bfa36f;
     padding:6px;
     border-radius:16px;
-    animation: fadeIn 0.5s ease-in;
   }
 
   .card:hover {
-    border-color: #d5ba78; /* lighter gold on hover */
-  }
-
-  /* Fade-in animation */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    border-color: #d5ba78;
   }
 
   .card-title {
@@ -195,7 +188,7 @@
     overflow:hidden;
     cursor:zoom-in;
     width:100%;
-    height:350px;
+    height:350px;              /* same height for all images */
     display:flex;
     align-items:center;
     justify-content:center;
@@ -204,15 +197,14 @@
   .card-image-wrapper img {
     width:100%;
     height:100%;
-    object-fit:cover;
-    opacity:5;
+    object-fit:cover;          /* same dimensions, no distortion */
     border-radius:16px;
-    transition:opacity .3s, transform .3s, box-shadow .3s;
+    transition:transform .3s, box-shadow .3s;
   }
 
   .card-image-wrapper:hover img {
     transform:scale(1.04);
-    box-shadow: 0 0 15px rgba(191,163,111,0.8); /* gold glow shadow */
+    box-shadow: 0 0 15px rgba(191,163,111,0.8);
   }
 
   mark {
@@ -464,7 +456,7 @@ async function searchImages() {
     wrap.className = "card-image-wrapper";
     const img = document.createElement("img");
     img.src = i.imageLink;
-    img.onload = () => img.classList.add("loaded");
+
     wrap.onclick = () => openModal(i.imageLink);
 
     wrap.appendChild(img);
@@ -498,4 +490,3 @@ window.addEventListener("load", loadCSV);
 
 </body>
 </html>
-
