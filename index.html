@@ -12,7 +12,7 @@
       background: #f7f7f7;
     }
     .container {
-      max-width: 500px;
+      max-width: 700px;
       margin: 0 auto;
       background: #fff;
       padding: 16px;
@@ -22,6 +22,9 @@
     h2 {
       margin-top: 0;
       text-align: center;
+    }
+    .input-wrapper {
+      position: relative;
     }
     input, button {
       width: 100%;
@@ -37,9 +40,10 @@
       background: #007bff;
       color: white;
       font-weight: bold;
+      cursor: pointer;
     }
     button:active {
-      opacity: 0.8;
+      opacity: 0.85;
     }
     .message {
       margin-top: 12px;
@@ -47,19 +51,91 @@
       color: #555;
       min-height: 18px;
     }
-    img {
-      margin-top: 16px;
-      max-width: 100%;
-      height: auto;
+
+    /* 🔽 Auto-suggest dropdown */
+    .suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 10;
       display: none;
     }
-    a#imgLink {
-      display: none;
-      margin-top: 8px;
+    .suggestion-item {
+      padding: 6px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+    .suggestion-item:hover {
+      background: #f5f5f5;
+    }
+    .suggestion-item small {
+      display: block;
+      color: #888;
+      font-size: 11px;
+    }
+
+    /* 🔽 Results grid: 1 col (mobile), 2 cols (tablet), 3 cols (desktop) */
+    .results {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 480px) {
+      .results {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (min-width: 900px) {
+      .results {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px;
+      background: #fafafa;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .card-sku {
       font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+    }
+    .card img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      border: 1px solid #eee;
+      margin-top: 6px;
+      display: none; /* shown when loaded */
+    }
+    .card-link {
+      display: block;
+      margin-top: 4px;
+      font-size: 11px;
       word-break: break-all;
+      color: #007bff;
+      text-decoration: none;
+    }
+    .card-link:hover {
+      text-decoration: underline;
     }
     .small-note {
       margin-top: 8px;
@@ -67,32 +143,61 @@
       color: #888;
       text-align: center;
     }
+
+    /* 🔽 Highlight style */
+    mark {
+      background: #ffeb3b;
+      padding: 0 1px;
+      border-radius: 2px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>SKU Image Finder</h2>
 
-    <input type="text" id="skuInput" placeholder="Enter SKU (e.g. JOPLST218)">
-    <button onclick="searchImage()">Search</button>
+    <div class="input-wrapper">
+      <input
+        type="text"
+        id="skuInput"
+        placeholder="Search by SKU or part of SKU (e.g. 3026, JOPLNB3026A)"
+        autocomplete="off"
+      >
+      <div class="suggestions" id="suggestions"></div>
+    </div>
 
-    <div class="message" id="message">Data loading from Excel (CSV)...</div>
+    <button onclick="searchImages()">Search</button>
 
-    <img id="skuImage" src="" alt="">
-    <a id="imgLink" href="#" target="_blank">Open image in new tab</a>
+    <div class="message" id="message">Loading data from sku_images.csv...</div>
+
+    <div class="results" id="results"></div>
 
     <div class="small-note">
       Data source: <strong>sku_images.csv</strong><br>
-      (Make sure this file is in the same folder as index.html)
+      Place this file in the same folder as index.html.
     </div>
   </div>
 
   <script>
-    let skuImages = {};       // SKU -> Image URL
-    let dataLoaded = false;   // Flag to know when CSV is loaded
-    let loadingError = false; // Flag in case CSV load fails
+    // Array of { sku, imageLink, title }
+    let skuData = [];
+    let dataLoaded = false;
+    let loadingError = false;
 
-    // Load CSV file and build SKU -> Image map
+    // Utility: highlight query inside text using <mark>
+    function highlightText(text, query) {
+      if (!query) return text || "";
+      const lowerText = (text || "").toLowerCase();
+      const lowerQuery = query.toLowerCase();
+      const index = lowerText.indexOf(lowerQuery);
+      if (index === -1) return text || "";
+      const before = text.slice(0, index);
+      const match = text.slice(index, index + query.length);
+      const after = text.slice(index + query.length);
+      return before + "<mark>" + match + "</mark>" + after;
+    }
+
+    // Load CSV file from the same folder as index.html
     async function loadCSV() {
       const msg = document.getElementById("message");
 
@@ -103,7 +208,7 @@
         }
 
         const text = await response.text();
-        const lines = text.trim().split(/[\r\n]+/); // split on new line
+        const lines = text.trim().split(/[\r\n]+/); // split on new lines
 
         if (lines.length <= 1) {
           msg.textContent = "CSV file is empty or has only header.";
@@ -111,108 +216,187 @@
           return;
         }
 
-        // First line is header: SKU,ImageLink,Title
+        // Header row: SKU,ImageLink,Title
         const header = lines[0].split(",");
         const skuIndex = header.findIndex(h => h.trim().toLowerCase() === "sku");
-        const imgIndex = header.findIndex(h => h.trim().toLowerCase().startsWith("imagelink"));
+        const imgIndex = header.findIndex(h => h.trim().toLowerCase() === "imagelink");
+        const titleIndex = header.findIndex(h => h.trim().toLowerCase() === "title");
 
         if (skuIndex === -1 || imgIndex === -1) {
-          msg.textContent = "CSV must have 'SKU' and 'ImageLink' columns in header.";
+          msg.textContent = "CSV must have 'SKU' and 'ImageLink' columns.";
           loadingError = true;
           return;
         }
 
-        // Parse each row
+        skuData = [];
+
+        // Parse each data row
         for (let i = 1; i < lines.length; i++) {
           const line = lines[i].trim();
           if (!line) continue;
 
+          // Simple CSV: split by comma (avoid commas inside SKU/ImageLink)
           const parts = line.split(",");
-          const sku = (parts[skuIndex] || "").trim();
-          const imgUrl = (parts[imgIndex] || "").trim();
 
-          if (sku && imgUrl) {
-            skuImages[sku] = imgUrl;
+          const sku = (parts[skuIndex] || "").trim();
+          const imageLink = (parts[imgIndex] || "").trim();
+          const title = titleIndex !== -1 ? (parts[titleIndex] || "").trim() : "";
+
+          if (sku && imageLink) {
+            skuData.push({ sku, imageLink, title });
           }
         }
 
         dataLoaded = true;
-        msg.textContent = "Data loaded. Enter SKU and tap Search.";
+        msg.textContent = "Data loaded. Start typing to see suggestions, then tap Search.";
       } catch (err) {
         console.error(err);
-        msg.textContent = "Failed to load sku_images.csv. Make sure it is uploaded and accessible.";
+        msg.textContent = "Failed to load sku_images.csv. Make sure it is in the repo root and public.";
         loadingError = true;
       }
     }
 
-    async function searchImage() {
-      const input = document.getElementById("skuInput");
-      const sku = input.value.trim();
-      const img = document.getElementById("skuImage");
-      const msg = document.getElementById("message");
-      const link = document.getElementById("imgLink");
+    // Show suggestions while typing
+    function updateSuggestions(query) {
+      const suggestionsDiv = document.getElementById("suggestions");
+      suggestionsDiv.innerHTML = "";
 
-      if (!sku) {
-        msg.textContent = "Please enter a SKU.";
-        img.style.display = "none";
-        img.src = "";
-        link.style.display = "none";
-        link.href = "#";
+      if (!dataLoaded || !query || query.length < 1) {
+        suggestionsDiv.style.display = "none";
+        return;
+      }
+
+      const lowerQuery = query.toLowerCase();
+
+      // Find up to 10 matching SKUs
+      const matches = skuData.filter(item =>
+        item.sku.toLowerCase().includes(lowerQuery)
+      ).slice(0, 10);
+
+      if (matches.length === 0) {
+        suggestionsDiv.style.display = "none";
+        return;
+      }
+
+      matches.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "suggestion-item";
+        div.innerHTML =
+          highlightText(item.sku, query) +
+          (item.title ? '<small>' + highlightText(item.title, query) + '</small>' : "");
+
+        div.addEventListener("click", () => {
+          const input = document.getElementById("skuInput");
+          input.value = item.sku; // fill exact SKU
+          suggestionsDiv.style.display = "none";
+          searchImages();
+        });
+
+        suggestionsDiv.appendChild(div);
+      });
+
+      suggestionsDiv.style.display = "block";
+    }
+
+    function hideSuggestions() {
+      const suggestionsDiv = document.getElementById("suggestions");
+      suggestionsDiv.style.display = "none";
+    }
+
+    // Search function: finds all SKUs containing the query
+    async function searchImages() {
+      const input = document.getElementById("skuInput");
+      const query = input.value.trim().toLowerCase();
+      const msg = document.getElementById("message");
+      const resultsDiv = document.getElementById("results");
+
+      hideSuggestions();
+      resultsDiv.innerHTML = "";
+
+      if (!query) {
+        msg.textContent = "Please type something to search (e.g. 3026).";
         return;
       }
 
       if (!dataLoaded && !loadingError) {
-        msg.textContent = "Loading data from CSV, please wait a moment...";
-        await loadCSV(); // ensure CSV is loaded before searching
+        msg.textContent = "Loading data from CSV, please wait...";
+        await loadCSV();
       }
 
-      if (loadingError) {
-        // If CSV failed to load, don't search
-        return;
-      }
+      if (loadingError) return;
 
-      // Case-insensitive search
-      const key = Object.keys(skuImages).find(
-        k => k.toLowerCase() === sku.toLowerCase()
+      const matches = skuData.filter(item =>
+        item.sku.toLowerCase().includes(query)
       );
 
-      if (!key) {
-        msg.textContent = "No image found for SKU: " + sku;
-        img.style.display = "none";
-        img.src = "";
-        link.style.display = "none";
-        link.href = "#";
+      if (matches.length === 0) {
+        msg.textContent = "No SKUs found containing: " + query;
         return;
       }
 
-      const url = skuImages[key];
+      msg.textContent = "Found " + matches.length + " result(s) for: " + query;
 
-      msg.textContent = "Result for: " + key;
+      matches.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
 
-      // Show direct image link
-      link.style.display = "block";
-      link.href = url;
-      link.textContent = url;
+        const titleEl = document.createElement("div");
+        titleEl.className = "card-title";
+        titleEl.innerHTML = highlightText(item.title || "(No title)", query);
 
-      img.onload = function () {
-        img.style.display = "block";
-      };
+        const skuEl = document.createElement("div");
+        skuEl.className = "card-sku";
+        skuEl.innerHTML = "SKU: " + highlightText(item.sku, query);
 
-      img.onerror = function () {
-        img.style.display = "none";
-        msg.textContent = "Image link is invalid or not accessible: " + url;
-      };
+        const img = document.createElement("img");
+        img.src = item.imageLink;
+        img.alt = item.sku;
+        img.onload = function () {
+          img.style.display = "block";
+        };
+        img.onerror = function () {
+          img.style.display = "none";
+          const errorMsg = document.createElement("div");
+          errorMsg.style.color = "red";
+          errorMsg.style.fontSize = "11px";
+          errorMsg.textContent = "Image not accessible: " + item.imageLink;
+          card.appendChild(errorMsg);
+        };
 
-      img.src = url;
+        const link = document.createElement("a");
+        link.className = "card-link";
+        link.href = item.imageLink;
+        link.target = "_blank";
+        link.textContent = item.imageLink;
+
+        card.appendChild(titleEl);
+        card.appendChild(skuEl);
+        card.appendChild(img);
+        card.appendChild(link);
+
+        resultsDiv.appendChild(card);
+      });
     }
 
-    // Pre-load CSV when page opens
+    // Load CSV when page opens
     window.addEventListener("load", loadCSV);
 
-    // Allow Enter key to trigger search
-    document.getElementById("skuInput").addEventListener("keyup", function (e) {
+    // Input events
+    const skuInput = document.getElementById("skuInput");
+
+    skuInput.addEventListener("keyup", function (e) {
       if (e.key === "Enter") {
-        searchImage();
+        searchImages();
+      } else {
+        updateSuggestions(skuInput.value);
+      }
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener("click", function (e) {
+      const wrapper = document.querySelector(".input-wrapper");
+      if (!wrapper.contains(e.target)) {
+        hideSuggestions();
       }
     });
   </script>
