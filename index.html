@@ -404,7 +404,7 @@
           <input
             type="text"
             id="skuInput"
-            placeholder="Search by SKU or part of SKU (e.g. 3026, JOPLNB3026A)"
+            placeholder="Search by SKU or part of SKU (e.g. 218, ST218, JOPLST218)"
             autocomplete="off"
           >
           <div class="suggestions" id="suggestions"></div>
@@ -418,8 +418,8 @@
     <div class="results" id="results"></div>
 
     <div class="small-note">
-      Data source: <strong>sku_images.csv</strong><br>
-      Place this file in the same folder as index.html.
+      IMPORTANT NOTICE: <strong>FOR INTERNAL USE ONLY</strong><br>
+      DO NOT Share this link out side of anyone.
     </div>
   </div>
 
@@ -564,7 +564,7 @@
       resultsDiv.innerHTML = "";
 
       if (!query) {
-        msg.textContent = "Please type something to search (e.g. 3026).";
+        msg.textContent = "Please type something to search (e.g. ST218).";
         return;
       }
 
@@ -699,3 +699,4 @@
   </script>
 </body>
 </html>
+
