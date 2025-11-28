@@ -144,9 +144,7 @@
       cursor: pointer;
       border-bottom: 1px solid #eee;
     }
-    .suggestion-item:hover {
-      background: #f3f3f3;
-    }
+    .suggestion-item:hover { background: #f3f3f3; }
 
     /* Results */
     .results {
@@ -263,7 +261,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
 <script>
-  // Firebase configuration
+  // Firebase configuration (your live config)
   const firebaseConfig = {
     apiKey: "AIzaSyD9oebZPuhL8ZngWCb87kY40pzKY9afiQE",
     authDomain: "sku-image-viewer.firebaseapp.com",
@@ -307,7 +305,6 @@
 
   logoutButton.onclick = async () => { await auth.signOut(); };
 
-  // App logic
   document.addEventListener("contextmenu", e => e.preventDefault());
 
   let skuData = [];
@@ -351,16 +348,14 @@
     if (!q) return text;
     const i = text.toLowerCase().indexOf(q.toLowerCase());
     return i >= 0
-      ? text.substring(0, i) + "<mark>" + text.substring(i, i + q.length) + "</mark>" + text.substring(i + q.length)
+      ? text.substring(0, i) + "<mark>" + text.substring(i, i+q.length) + "</mark>" + text.substring(i+q.length)
       : text;
   }
 
   function updateSuggestions(q) {
     if (!q) return suggestionsDiv.style.display = "none";
 
-    const matches = skuData
-      .filter(i => i.sku.toLowerCase().includes(q.toLowerCase()))
-      .slice(0, 10);
+    const matches = skuData.filter(i => i.sku.toLowerCase().includes(q.toLowerCase())).slice(0,10);
 
     if (!matches.length) return suggestionsDiv.style.display = "none";
 
@@ -376,6 +371,7 @@
       };
       suggestionsDiv.appendChild(div);
     });
+
     suggestionsDiv.style.display = "block";
   }
 
@@ -429,6 +425,7 @@
     modalImage.src = src;
     imageModal.classList.add("show");
   }
+
   modalClose.onclick = () => imageModal.classList.remove("show");
   imageModal.onclick = e => { if (e.target === imageModal) imageModal.classList.remove("show"); };
 
