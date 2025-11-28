@@ -1,202 +1,261 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>SKU Image Finder</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>SKU Image Finder</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 16px;
-      background: #f7f7f7;
-      color: #222;
-      -webkit-touch-callout: none;
-      user-select: none;
-    }
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 16px;
+    background: #f7f7f7;
+    color: #222;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
 
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      background: white;
-      padding: 16px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-    }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  }
 
-    /* Branding on LOGIN only (logo, no text) */
-    .branding {
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .branding img {
-      max-width: 160px;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-    }
+  .branding {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .branding img {
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
 
-    /* Login Screen */
-    #login-screen .container {
-      max-width: 400px;
-      text-align: center;
-    }
-    .login-form {
-      margin-top: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .login-form input,
-    .login-form button {
-      width: 100%;
-      padding: 10px;
-      font-size: 15px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    .login-form button {
-      background: #bfa36f;
-      color: #fff;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .login-error {
-      margin-top: 8px;
-      font-size: 13px;
-      color: #c00;
-      min-height: 18px;
-    }
+  /* WARNING blinking text */
+  .warning-text {
+    text-align: center;
+    color: red;
+    font-weight: 900;
+    font-size: 16px;
+    margin-bottom: 10px;
+    animation: blink 0.9s infinite alternate;
+    letter-spacing: 1.6px;
+  }
+  @keyframes blink {
+    from { opacity: 1; }
+    to { opacity: 0.15; }
+  }
 
-    /* Top Bar on search screen */
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .top-bar-right button {
-      padding: 6px 10px;
-      font-size: 13px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      background: #f5f5f5;
-      cursor: pointer;
-    }
+  /* Login Screen */
+  #login-screen .container {
+    max-width: 400px;
+    text-align: center;
+  }
 
-    /* Search Area */
-    .search-bar {
-      display: flex;
-      gap: 8px;
-      flex-direction: column;
-      margin-bottom: 12px;
-      position: relative;
-    }
-    input, button {
-      padding: 10px;
-      font-size: 15px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    .search-bar button {
-      background: #bfa36f;
-      color: #fff;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
+  .login-form {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .login-form input,
+  .login-form button {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
 
-    .message {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #555;
-      min-height: 18px;
-    }
+  /* Buttons theme (logo gold) */
+  .search-bar button,
+  .login-form button,
+  .top-bar-right button {
+    background: #bfa36f;
+    color: #fff;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
 
-    /* Suggestions dropdown */
-    .suggestions {
-      position: absolute;
-      top: 48px;
-      left: 0;
-      right: 0;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-top: none;
-      border-radius: 0 0 4px 4px;
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 30;
-      display: none;
-    }
-    .suggestion-item {
-      padding: 6px 10px;
-      font-size: 14px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-    }
-    .suggestion-item:hover { background: #f3f3f3; }
+  .login-error {
+    margin-top: 8px;
+    font-size: 14px;
+    color: red;
+  }
 
-    /* Results */
-    .results {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      margin-top: 14px;
-    }
-    @media (min-width: 480px) {
-      .results { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (min-width: 900px) {
-      .results { grid-template-columns: repeat(3, 1fr); }
-    }
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
 
-    .card {
-      background: #fafafa;
-      border: 1px solid #ddd;
-      padding: 10px;
-      border-radius: 8px;
-    }
-    .card-title { font-weight: bold; font-size: 14px; }
-    .card-category { color:#bfa36f; font-size:12px; margin-top:2px; font-weight:600; }
-    .card-sku { font-size: 12px; color: #666; margin-top: 3px; }
+  .top-bar-right button {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #bfa36f;
+    color: #fff;
+  }
 
-    .card-image-wrapper {
-      margin-top: 6px;
-      background: #000;
-      border-radius: 6px;
-      overflow: hidden;
-      cursor: zoom-in;
-    }
-    .card-image-wrapper img {
-      width: 100%;
-      opacity: 0;
-      transition: opacity .3s;
-      -webkit-user-drag: none;
-      user-select: none;
-    }
-    .card-image-wrapper img.loaded { opacity: 1; }
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+    margin-bottom: 10px;
+    position: relative;
+  }
 
-    mark { background: #ffeb3b; }
+  input, button {
+    padding: 10px;
+    font-size: 15px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
 
-    /* Zoom Modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-    }
-    .modal-backdrop.show { display: flex; }
-    .modal-content { max-width:92vw; max-height:92vh; position:relative; }
-    .modal-close {
-      position:absolute; top:-32px; right:0; font-size:30px; color:#fff; cursor:pointer;
-    }
-  </style>
+  .message {
+    margin-top: 4px;
+    font-size: 14px;
+    min-height: 18px;
+  }
+
+  .suggestions {
+    position: absolute;
+    top: 48px;
+    left: 0;
+    right: 0;
+    background:#fff;
+    border:1px solid #ccc;
+    border-top:none;
+    max-height:200px;
+    overflow-y:auto;
+    display:none;
+    z-index: 30;
+  }
+
+  .suggestion-item {
+    padding:6px 10px;
+    cursor:pointer;
+    font-size:14px;
+    border-bottom:1px solid #eee;
+  }
+  .suggestion-item:hover { background:#f3f3f3; }
+
+  /* GRID A + SPACELESS + ROUNDED */
+  .results {
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:6px;
+    margin-top:10px;
+  }
+  @media (min-width:768px) {
+    .results { grid-template-columns:repeat(3,1fr); }
+  }
+
+  .card {
+    background:#fafafa;
+    border: 1.8px solid #bfa36f;   /* elegant gold border */
+    padding:6px;
+    border-radius:16px;
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  .card:hover {
+    border-color: #d5ba78; /* lighter gold on hover */
+  }
+
+  /* Fade-in animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-title {
+    font-weight:bold;
+    font-size:14px;
+  }
+
+  .card-sku {
+    font-size:12px;
+    color:#666;
+    margin-top:2px;
+  }
+
+  .card-image-wrapper {
+    margin-top:6px;
+    background:black;
+    border-radius:16px;
+    overflow:hidden;
+    cursor:zoom-in;
+    width:100%;
+    height:350px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .card-image-wrapper img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    opacity:0;
+    border-radius:16px;
+    transition:opacity .3s, transform .3s, box-shadow .3s;
+  }
+
+  .card-image-wrapper:hover img {
+    transform:scale(1.04);
+    box-shadow: 0 0 15px rgba(191,163,111,0.8); /* gold glow shadow */
+  }
+
+  mark {
+    background: #bfa36f;
+    color: #fff;
+  }
+
+  /* GOLD COPYRIGHT FOOTER */
+  .gold-footer {
+    text-align: center;
+    font-size: 13px;
+    color: #bfa36f;
+    margin-top: 16px;
+    padding-top: 10px;
+    border-top: 2px solid #bfa36f;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    opacity: 0.95;
+  }
+
+  /* MODAL */
+  .modal-backdrop {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+  }
+  .modal-backdrop.show { display:flex; }
+
+  .modal-content { max-width:92vw; max-height:92vh; position:relative; }
+
+  .modal-close {
+    position:absolute;
+    top:-32px;
+    right:0;
+    color:white;
+    font-size:32px;
+    cursor:pointer;
+  }
+</style>
 </head>
 
 <body>
@@ -205,7 +264,7 @@
 <div id="login-screen">
   <div class="container">
     <div class="branding">
-      <img src="Rajnandini_Logo_Logo_WHITE_COLOR.jpg" alt="Logo">
+      <img src="Rajnandini_Logo_Logo_WHITE_COLOR.jpg" alt="logo">
     </div>
     <h3>Team Login</h3>
 
@@ -218,14 +277,18 @@
   </div>
 </div>
 
-<!-- MAIN APP SCREEN -->
+<!-- MAIN APP -->
 <div id="app-screen" style="display:none;">
   <div class="container">
-<div class="branding" style="margin-bottom:10px;">
-      <img src="Rajnandini_Logo_Logo_WHITE_COLOR.jpg" alt="Logo">
+
+    <div class="branding">
+      <img src="Rajnandini_Logo_Logo_WHITE_COLOR.jpg" alt="logo">
     </div>
+
+    <div class="warning-text">FOR INTERNAL USE ONLY!</div>
+
     <div class="top-bar">
-      <div id="userEmail" style="font-size:14px;font-weight:bold;"></div>
+      <div id="userEmail" style="font-weight:bold;font-size:14px;"></div>
       <div class="top-bar-right">
         <button id="logoutButton">Logout</button>
       </div>
@@ -234,229 +297,204 @@
     <div class="search-bar">
       <input id="skuInput" placeholder="Search SKU or part (ex: 3026)" autocomplete="off">
       <button onclick="searchImages()">Search</button>
-      <div class="suggestions" id="suggestions"></div>
+      <div id="suggestions" class="suggestions"></div>
     </div>
 
-    <div class="message" id="message">Loading data...</div>
-    <div class="results" id="results"></div>
+    <div id="message" class="message">Loading data...</div>
+    <div id="results" class="results"></div>
+
+    <div class="gold-footer">
+      © All Rights Reserved – Rajnandini Fashion India Limited.
+    </div>
   </div>
 </div>
 
-<!-- IMAGE MODAL -->
-<div class="modal-backdrop" id="imageModal">
+<!-- MODAL -->
+<div id="imageModal" class="modal-backdrop">
   <div class="modal-content">
-    <div class="modal-close" id="modalClose">&times;</div>
+    <div id="modalClose" class="modal-close">&times;</div>
     <img id="modalImage">
   </div>
 </div>
 
-<!-- Firebase SDKs -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
 <script>
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyD9oebZPuhL8ZngWCb87kY40pzKY9afiQE",
-    authDomain: "sku-image-viewer.firebaseapp.com",
-    projectId: "sku-image-viewer",
-    storageBucket: "sku-image-viewer.firebasestorage.app",
-    messagingSenderId: "106442502934",
-    appId: "1:106442502934:web:bfdba7d1ebed7037fe9637",
-    measurementId: "G-9B17HHRN44"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyD9oebZPuhL8ZngWCb87kY40pzKY9afiQE",
+  authDomain: "sku-image-viewer.firebaseapp.com",
+  projectId: "sku-image-viewer",
+  storageBucket: "sku-image-viewer.firebasestorage.app",
+  messagingSenderId: "106442502934",
+  appId: "1:106442502934:web:bfdba7d1ebed7037fe9637"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-  const loginScreen = document.getElementById("login-screen");
-  const appScreen = document.getElementById("app-screen");
-  const loginEmail = document.getElementById("loginEmail");
-  const loginPassword = document.getElementById("loginPassword");
-  const loginError = document.getElementById("loginError");
-  const logoutButton = document.getElementById("logoutButton");
-  const userEmailDisplay = document.getElementById("userEmail");
+const loginScreen = document.getElementById("login-screen");
+const appScreen = document.getElementById("app-screen");
+const resultsDiv = document.getElementById("results");
+const suggestionsDiv = document.getElementById("suggestions");
+const skuInput = document.getElementById("skuInput");
+const msg = document.getElementById("message");
 
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      userEmailDisplay.textContent = user.email;
-      loginScreen.style.display = "none";
-      appScreen.style.display = "block";
-    } else {
-      appScreen.style.display = "none";
-      loginScreen.style.display = "block";
-    }
-  });
+let dataLoaded = false;
+let skuData = [];
 
-  document.getElementById("loginButton").onclick = async () => {
-    loginError.textContent = "";
-    try {
-      await auth.signInWithEmailAndPassword(loginEmail.value, loginPassword.value);
-    } catch (err) {
-      loginError.textContent = "Invalid login details";
-    }
-  };
-
-  logoutButton.onclick = async () => { await auth.signOut(); };
-
-  // Prevent right-click (casual save)
-  document.addEventListener("contextmenu", e => e.preventDefault());
-
-  // SKU data
-  let skuData = [];
-  let dataLoaded = false;
-
-  const skuInput = document.getElementById("skuInput");
-  const suggestionsDiv = document.getElementById("suggestions");
-  const resultsDiv = document.getElementById("results");
-  const msg = document.getElementById("message");
-
-  const imageModal = document.getElementById("imageModal");
-  const modalImage = document.getElementById("modalImage");
-  const modalClose = document.getElementById("modalClose");
-
-  async function loadCSV() {
-    const response = await fetch("sku_images.csv");
-    const text = await response.text();
-    const lines = text.trim().split(/[\r\n]+/);
-
-    const header = lines[0].split(",");
-    const iSKU = header.indexOf("SKU");
-    const iIMG = header.indexOf("ImageLink");
-    const iTITLE = header.indexOf("Title");
-    const iCAT = header.indexOf("Category");
-
-    for (let i = 1; i < lines.length; i++) {
-      const p = lines[i].split(",");
-      if (!p[iSKU] || !p[iIMG]) continue;
-      skuData.push({
-        sku: p[iSKU].trim(),
-        imageLink: p[iIMG].trim(),
-        title: (p[iTITLE] || "").trim(),
-        category: (p[iCAT] || "").trim()
-      });
-    }
-
-    dataLoaded = true;
-    msg.textContent = "Ready.";
+/* LOGIN */
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("userEmail").textContent = user.email;
+    loginScreen.style.display = "none";
+    appScreen.style.display = "block";
+  } else {
+    appScreen.style.display = "none";
+    loginScreen.style.display = "block";
   }
+});
 
-  function highlight(text, q) {
-    if (!text) return "";
-    if (!q) return text;
-    const lower = text.toLowerCase();
-    const qq = q.toLowerCase();
-    const idx = lower.indexOf(qq);
-    if (idx === -1) return text;
-    return (
-      text.substring(0, idx) +
-      "<mark>" + text.substring(idx, idx + q.length) + "</mark>" +
-      text.substring(idx + q.length)
-    );
+document.getElementById("loginButton").onclick = async () => {
+  document.getElementById("loginError").textContent = "";
+  try {
+    await auth.signInWithEmailAndPassword(loginEmail.value, loginPassword.value);
+  } catch {
+    document.getElementById("loginError").textContent = "Invalid login details";
   }
+};
 
-  function updateSuggestions(q) {
-    if (!q) {
-      suggestionsDiv.style.display = "none";
-      return;
-    }
+document.getElementById("logoutButton").onclick = async () => { await auth.signOut(); };
 
-    const matches = skuData
-      .filter(i => i.sku.toLowerCase().includes(q.toLowerCase()))
-      .slice(0, 10);
+document.addEventListener("contextmenu", e => e.preventDefault());
 
-    if (!matches.length) {
-      suggestionsDiv.style.display = "none";
-      return;
-    }
+async function loadCSV() {
+  const response = await fetch("sku_images.csv");
+  const text = await response.text();
+  const lines = text.trim().split(/[\r\n]+/);
+  const header = lines[0].split(",");
+  const iSKU = header.indexOf("SKU");
+  const iIMG = header.indexOf("ImageLink");
+  const iTITLE = header.indexOf("Title");
+  const iCAT = header.indexOf("Category");
 
-    suggestionsDiv.innerHTML = "";
-    matches.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "suggestion-item";
-      div.innerHTML = highlight(item.sku, q);
-      div.onclick = () => {
-        skuInput.value = item.sku;
-        suggestionsDiv.style.display = "none";
-        searchImages();
-      };
-      suggestionsDiv.appendChild(div);
-    });
-
-    suggestionsDiv.style.display = "block";
-  }
-
-  async function searchImages() {
-    const q = skuInput.value.trim().toLowerCase();
-    resultsDiv.innerHTML = "";
-    suggestionsDiv.style.display ="none";
-
-    if (!dataLoaded) await loadCSV();
-    if (!q) {
-      msg.textContent = "Enter SKU";
-      return;
-    }
-
-    const matches = skuData.filter(i => i.sku.toLowerCase().includes(q));
-
-    msg.textContent = `Found ${matches.length} result(s)`;
-
-    matches.forEach(i => {
-      const card = document.createElement("div");
-      card.className = "card";
-
-      const titleEl = document.createElement("div");
-      titleEl.className = "card-title";
-      titleEl.innerHTML = highlight(i.title || i.sku, q);
-
-      if (i.category) {
-        const catEl = document.createElement("div");
-        catEl.className = "card-category";
-        catEl.textContent = i.category;
-        card.appendChild(titleEl);
-        card.appendChild(catEl);
-      } else {
-        card.appendChild(titleEl);
-      }
-
-      const skuEl = document.createElement("div");
-      skuEl.className = "card-sku";
-      skuEl.innerHTML = "SKU: " + highlight(i.sku, q);
-
-      const wrap = document.createElement("div");
-      wrap.className = "card-image-wrapper";
-
-      const img = document.createElement("img");
-      img.src = i.imageLink;
-      img.onload = () => img.classList.add("loaded");
-      wrap.onclick = () => openModal(i.imageLink);
-
-      wrap.appendChild(img);
-      card.appendChild(skuEl);
-      card.appendChild(wrap);
-
-      resultsDiv.appendChild(card);
+  for (let i = 1; i < lines.length; i++) {
+    const p = lines[i].split(",");
+    if (!p[iSKU] || !p[iIMG]) continue;
+    skuData.push({
+      sku: p[iSKU].trim(),
+      imageLink: p[iIMG].trim(),
+      title: (p[iTITLE] || "").trim(),
+      category: (p[iCAT] || "").trim()
     });
   }
 
-  function openModal(src) {
-    modalImage.src = src;
-    imageModal.classList.add("show");
+  dataLoaded = true;
+  msg.textContent = "Ready.";
+}
+
+function highlight(text, q) {
+  if (!text || !q) return text || "";
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx < 0) return text;
+  return text.substring(0, idx) +
+         "<mark>" + text.substring(idx, idx + q.length) + "</mark>" +
+         text.substring(idx + q.length);
+}
+
+function updateSuggestions(q) {
+  if (!q) {
+    suggestionsDiv.style.display = "none";
+    return;
   }
 
-  modalClose.onclick = () => imageModal.classList.remove("show");
-  imageModal.onclick = e => { if (e.target === imageModal) imageModal.classList.remove("show"); };
+  const matches = skuData
+    .filter(i => i.sku.toLowerCase().includes(q.toLowerCase()))
+    .slice(0, 10);
 
-  skuInput.addEventListener("keyup", e => {
-    if (e.key === "Enter") searchImages();
-    else updateSuggestions(skuInput.value);
+  if (!matches.length) {
+    suggestionsDiv.style.display = "none";
+    return;
+  }
+
+  suggestionsDiv.innerHTML = "";
+  matches.forEach(item => {
+    const d = document.createElement("div");
+    d.className = "suggestion-item";
+    d.innerHTML = highlight(item.sku, q);
+    d.onclick = () => {
+      skuInput.value = item.sku;
+      suggestionsDiv.style.display = "none";
+      searchImages();
+    };
+    suggestionsDiv.appendChild(d);
   });
 
-  window.addEventListener("load", () => {
-    loadCSV().catch(() => { msg.textContent = "Error loading sku_images.csv"; });
+  suggestionsDiv.style.display = "block";
+}
+
+async function searchImages() {
+  const q = skuInput.value.trim().toLowerCase();
+  resultsDiv.innerHTML = "";
+  suggestionsDiv.style.display ="none";
+
+  if (!dataLoaded) await loadCSV();
+  if (!q) {
+    msg.textContent = "Enter SKU";
+    return;
+  }
+
+  const matches = skuData.filter(i => i.sku.toLowerCase().includes(q));
+  msg.textContent = `Found ${matches.length} result(s)`;
+
+  matches.forEach(i => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const t = document.createElement("div");
+    t.className = "card-title";
+    t.innerHTML = highlight(i.title || i.sku, q);
+
+    const s = document.createElement("div");
+    s.className = "card-sku";
+    s.innerHTML = "SKU: " + highlight(i.sku, q);
+
+    const wrap = document.createElement("div");
+    wrap.className = "card-image-wrapper";
+    const img = document.createElement("img");
+    img.src = i.imageLink;
+    img.onload = () => img.classList.add("loaded");
+    wrap.onclick = () => openModal(i.imageLink);
+
+    wrap.appendChild(img);
+    card.appendChild(t);
+    card.appendChild(s);
+    card.appendChild(wrap);
+
+    resultsDiv.appendChild(card);
   });
+}
+
+/* IMAGE MODAL */
+const imageModal = document.getElementById("imageModal");
+const modalImage = document.getElementById("modalImage");
+const modalClose = document.getElementById("modalClose");
+
+function openModal(src) {
+  modalImage.src = src;
+  imageModal.classList.add("show");
+}
+
+modalClose.onclick = () => imageModal.classList.remove("show");
+imageModal.onclick = e => { if (e.target === imageModal) imageModal.classList.remove("show"); };
+
+skuInput.addEventListener("keyup", e =>
+  e.key === "Enter" ? searchImages() : updateSuggestions(skuInput.value)
+);
+
+window.addEventListener("load", loadCSV);
 </script>
 
 </body>
 </html>
-
