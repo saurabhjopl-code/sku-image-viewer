@@ -2,57 +2,185 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>SKU Image Finder</title>
+  <title>SKU Image Finder - Rajnandini Fashion India Ltd.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
+    :root {
+      --primary-color: #bfa36f; /* gold-ish */
+      --bg-light: #f7f7f7;
+      --bg-container-light: #ffffff;
+      --text-main-light: #222222;
+      --text-muted-light: #555555;
+      --card-bg-light: #fafafa;
+
+      --bg-dark: #020617;
+      --bg-container-dark: #020617;
+      --text-main-dark: #e5e7eb;
+      --text-muted-dark: #9ca3af;
+      --card-bg-dark: #0b1220;
+    }
+
     body {
       font-family: Arial, sans-serif;
       padding: 16px;
-      background: #f7f7f7;
+      background: var(--bg-light);
+      color: var(--text-main-light);
+      transition: background 0.25s, color 0.25s;
+      -webkit-touch-callout: none;
+      user-select: none;
     }
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-main-dark);
+    }
+
     .container {
-      max-width: 700px;
+      max-width: 900px;
       margin: 0 auto;
-      background: #fff;
+      background: var(--bg-container-light);
       padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+      position: relative;
+      transition: background 0.25s, box-shadow 0.25s;
+    }
+    body.dark-mode .container {
+      background: var(--bg-container-dark);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+    }
+
+    h1, h2 {
+      margin-top: 0;
     }
     h2 {
-      margin-top: 0;
       text-align: center;
+      margin-bottom: 8px;
     }
+
+    /* Branding */
+    .branding {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .branding img {
+      max-width: 160px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .branding-title {
+      font-size: 18px;
+      margin-top: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #e5d3a2;
+    }
+    body.dark-mode .branding-title {
+      color: #f4e3b3;
+    }
+
+    /* Top bar with dark mode toggle */
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+    .toggle-label {
+      font-size: 12px;
+      color: var(--text-muted-light);
+    }
+    body.dark-mode .toggle-label {
+      color: var(--text-muted-dark);
+    }
+
+    .toggle-btn {
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.12);
+      background: var(--bg-light);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.25s, color 0.25s, border-color 0.25s;
+    }
+    body.dark-mode .toggle-btn {
+      background: #020617;
+      border-color: rgba(255,255,255,0.1);
+      color: var(--text-main-dark);
+    }
+
+    /* Sticky search bar */
+    .search-bar-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding-bottom: 10px;
+      background: inherit;
+    }
+
+    .search-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    @media (min-width: 600px) {
+      .search-bar {
+        flex-direction: row;
+      }
+    }
+
     .input-wrapper {
       position: relative;
+      flex: 1;
     }
+
     input, button {
       width: 100%;
       padding: 10px;
-      font-size: 16px;
-      margin-top: 8px;
+      font-size: 15px;
       box-sizing: border-box;
       border-radius: 4px;
       border: 1px solid #ccc;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
     }
+    input {
+      background: #ffffff;
+      color: inherit;
+    }
+    body.dark-mode input {
+      background: #020617;
+      border-color: #374151;
+      color: var(--text-main-dark);
+    }
+
     button {
       border: none;
-      background: #007bff;
-      color: white;
+      background: var(--primary-color);
+      color: #ffffff;
       font-weight: bold;
       cursor: pointer;
     }
     button:active {
       opacity: 0.85;
     }
+
     .message {
       margin-top: 12px;
       font-size: 14px;
-      color: #555;
+      color: var(--text-muted-light);
       min-height: 18px;
     }
+    body.dark-mode .message {
+      color: var(--text-muted-dark);
+    }
 
-    /* 🔽 Auto-suggest dropdown */
+    /* Suggestions dropdown */
     .suggestions {
       position: absolute;
       top: 100%;
@@ -62,10 +190,14 @@
       border: 1px solid #ccc;
       border-top: none;
       border-radius: 0 0 4px 4px;
-      max-height: 200px;
+      max-height: 220px;
       overflow-y: auto;
-      z-index: 10;
+      z-index: 30;
       display: none;
+    }
+    body.dark-mode .suggestions {
+      background: #020617;
+      border-color: #374151;
     }
     .suggestion-item {
       padding: 6px 10px;
@@ -73,11 +205,17 @@
       cursor: pointer;
       border-bottom: 1px solid #f0f0f0;
     }
+    body.dark-mode .suggestion-item {
+      border-bottom-color: #111827;
+    }
     .suggestion-item:last-child {
       border-bottom: none;
     }
     .suggestion-item:hover {
       background: #f5f5f5;
+    }
+    body.dark-mode .suggestion-item:hover {
+      background: #111827;
     }
     .suggestion-item small {
       display: block;
@@ -85,7 +223,7 @@
       font-size: 11px;
     }
 
-    /* 🔽 Results grid: 1 col (mobile), 2 cols (tablet), 3 cols (desktop) */
+    /* Results grid */
     .results {
       margin-top: 16px;
       display: grid;
@@ -105,9 +243,14 @@
 
     .card {
       border: 1px solid #ddd;
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 8px;
-      background: #fafafa;
+      background: var(--card-bg-light);
+      overflow: hidden;
+    }
+    body.dark-mode .card {
+      background: var(--card-bg-dark);
+      border-color: #1f2937;
     }
     .card-title {
       font-size: 14px;
@@ -115,58 +258,160 @@
     }
     .card-sku {
       font-size: 12px;
-      color: #666;
+      color: var(--text-muted-light);
       margin-top: 2px;
     }
-    .card img {
+    body.dark-mode .card-sku {
+      color: var(--text-muted-dark);
+    }
+
+    /* Image wrapper + watermark */
+    .card-image-wrapper {
+      position: relative;
+      margin-top: 6px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #000;
+      cursor: zoom-in;
+      -webkit-touch-callout: none;
+    }
+    .card-image-wrapper img {
       width: 100%;
       height: auto;
-      border-radius: 4px;
-      border: 1px solid #eee;
-      margin-top: 6px;
-      display: none; /* shown when loaded */
-    }
-    .card-link {
       display: block;
-      margin-top: 4px;
-      font-size: 11px;
-      word-break: break-all;
-      color: #007bff;
-      text-decoration: none;
+      -webkit-user-drag: none;
+      user-drag: none;
+      user-select: none;
+      pointer-events: auto;
+      opacity: 0;
+      transition: opacity 0.25s ease-out;
     }
-    .card-link:hover {
-      text-decoration: underline;
+    .card-image-wrapper img.loaded {
+      opacity: 1;
     }
+    .watermark {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.18);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      transform: rotate(-25deg);
+    }
+
     .small-note {
       margin-top: 8px;
       font-size: 11px;
-      color: #888;
+      color: var(--text-muted-light);
       text-align: center;
     }
+    body.dark-mode .small-note {
+      color: var(--text-muted-dark);
+    }
 
-    /* 🔽 Highlight style */
     mark {
       background: #ffeb3b;
       padding: 0 1px;
       border-radius: 2px;
     }
+
+    /* Zoom modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      -webkit-touch-callout: none;
+    }
+    .modal-backdrop.show {
+      display: flex;
+    }
+    .modal-content {
+      max-width: 90vw;
+      max-height: 90vh;
+      position: relative;
+    }
+    .modal-image-wrapper {
+      position: relative;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #000;
+    }
+    .modal-image-wrapper img {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+      margin: 0 auto;
+      -webkit-user-drag: none;
+      user-drag: none;
+      user-select: none;
+      pointer-events: auto;
+    }
+    .modal-watermark {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      color: rgba(255,255,255,0.22);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      transform: rotate(-25deg);
+      text-align: center;
+    }
+    .modal-close {
+      position: absolute;
+      top: -32px;
+      right: 0;
+      font-size: 24px;
+      color: #ffffff;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>SKU Image Finder</h2>
-
-    <div class="input-wrapper">
-      <input
-        type="text"
-        id="skuInput"
-        placeholder="Search by SKU or part of SKU (e.g. 3026, JOPLNB3026A)"
-        autocomplete="off"
-      >
-      <div class="suggestions" id="suggestions"></div>
+    <div class="top-bar">
+      <span class="toggle-label">Theme:</span>
+      <button class="toggle-btn" id="darkToggle">🌞 Light / 🌙 Dark</button>
     </div>
 
-    <button onclick="searchImages()">Search</button>
+    <!-- Branding -->
+    <div class="branding">
+      <img src="Rajnandini_Logo_Logo_WHITE_COLOR.jpg"
+           alt="Rajnandini Fashion India Ltd Logo">
+      <div class="branding-title">RAJNANDINI FASHION INDIA LTD.</div>
+    </div>
+
+    <!-- Sticky search bar -->
+    <div class="search-bar-wrapper">
+      <div class="search-bar">
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="skuInput"
+            placeholder="Search by SKU or part of SKU (e.g. 3026, JOPLNB3026A)"
+            autocomplete="off"
+          >
+          <div class="suggestions" id="suggestions"></div>
+        </div>
+        <button onclick="searchImages()">Search</button>
+      </div>
+    </div>
 
     <div class="message" id="message">Loading data from sku_images.csv...</div>
 
@@ -178,13 +423,35 @@
     </div>
   </div>
 
+  <!-- Zoom Modal -->
+  <div class="modal-backdrop" id="imageModal">
+    <div class="modal-content">
+      <div class="modal-close" id="modalClose">&times;</div>
+      <div class="modal-image-wrapper">
+        <img id="modalImage" src="" alt="">
+        <div class="modal-watermark">RAJNANDINI</div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Array of { sku, imageLink, title }
     let skuData = [];
     let dataLoaded = false;
     let loadingError = false;
 
-    // Utility: highlight query inside text using <mark>
+    const skuInput = document.getElementById("skuInput");
+    const suggestionsDiv = document.getElementById("suggestions");
+    const resultsDiv = document.getElementById("results");
+    const msg = document.getElementById("message");
+
+    const imageModal = document.getElementById("imageModal");
+    const modalImage = document.getElementById("modalImage");
+    const modalClose = document.getElementById("modalClose");
+
+    // Prevent right-click everywhere
+    document.addEventListener("contextmenu", e => e.preventDefault());
+
+    // Highlight utility
     function highlightText(text, query) {
       if (!query) return text || "";
       const lowerText = (text || "").toLowerCase();
@@ -197,10 +464,7 @@
       return before + "<mark>" + match + "</mark>" + after;
     }
 
-    // Load CSV file from the same folder as index.html
     async function loadCSV() {
-      const msg = document.getElementById("message");
-
       try {
         const response = await fetch("sku_images.csv");
         if (!response.ok) {
@@ -208,7 +472,7 @@
         }
 
         const text = await response.text();
-        const lines = text.trim().split(/[\r\n]+/); // split on new lines
+        const lines = text.trim().split(/[\r\n]+/);
 
         if (lines.length <= 1) {
           msg.textContent = "CSV file is empty or has only header.";
@@ -216,7 +480,6 @@
           return;
         }
 
-        // Header row: SKU,ImageLink,Title
         const header = lines[0].split(",");
         const skuIndex = header.findIndex(h => h.trim().toLowerCase() === "sku");
         const imgIndex = header.findIndex(h => h.trim().toLowerCase() === "imagelink");
@@ -230,14 +493,11 @@
 
         skuData = [];
 
-        // Parse each data row
         for (let i = 1; i < lines.length; i++) {
           const line = lines[i].trim();
           if (!line) continue;
 
-          // Simple CSV: split by comma (avoid commas inside SKU/ImageLink)
           const parts = line.split(",");
-
           const sku = (parts[skuIndex] || "").trim();
           const imageLink = (parts[imgIndex] || "").trim();
           const title = titleIndex !== -1 ? (parts[titleIndex] || "").trim() : "";
@@ -256,9 +516,7 @@
       }
     }
 
-    // Show suggestions while typing
     function updateSuggestions(query) {
-      const suggestionsDiv = document.getElementById("suggestions");
       suggestionsDiv.innerHTML = "";
 
       if (!dataLoaded || !query || query.length < 1) {
@@ -268,7 +526,6 @@
 
       const lowerQuery = query.toLowerCase();
 
-      // Find up to 10 matching SKUs
       const matches = skuData.filter(item =>
         item.sku.toLowerCase().includes(lowerQuery)
       ).slice(0, 10);
@@ -286,8 +543,7 @@
           (item.title ? '<small>' + highlightText(item.title, query) + '</small>' : "");
 
         div.addEventListener("click", () => {
-          const input = document.getElementById("skuInput");
-          input.value = item.sku; // fill exact SKU
+          skuInput.value = item.sku;
           suggestionsDiv.style.display = "none";
           searchImages();
         });
@@ -299,17 +555,11 @@
     }
 
     function hideSuggestions() {
-      const suggestionsDiv = document.getElementById("suggestions");
       suggestionsDiv.style.display = "none";
     }
 
-    // Search function: finds all SKUs containing the query
     async function searchImages() {
-      const input = document.getElementById("skuInput");
-      const query = input.value.trim().toLowerCase();
-      const msg = document.getElementById("message");
-      const resultsDiv = document.getElementById("results");
-
+      const query = skuInput.value.trim().toLowerCase();
       hideSuggestions();
       resultsDiv.innerHTML = "";
 
@@ -348,42 +598,87 @@
         skuEl.className = "card-sku";
         skuEl.innerHTML = "SKU: " + highlightText(item.sku, query);
 
+        const imgWrapper = document.createElement("div");
+        imgWrapper.className = "card-image-wrapper";
+
         const img = document.createElement("img");
         img.src = item.imageLink;
         img.alt = item.sku;
+        img.draggable = false;
+
         img.onload = function () {
-          img.style.display = "block";
+          img.classList.add("loaded");
         };
+
         img.onerror = function () {
-          img.style.display = "none";
+          imgWrapper.style.display = "none";
           const errorMsg = document.createElement("div");
           errorMsg.style.color = "red";
           errorMsg.style.fontSize = "11px";
-          errorMsg.textContent = "Image not accessible: " + item.imageLink;
+          errorMsg.textContent = "Image not accessible.";
           card.appendChild(errorMsg);
         };
 
-        const link = document.createElement("a");
-        link.className = "card-link";
-        link.href = item.imageLink;
-        link.target = "_blank";
-        link.textContent = item.imageLink;
+        const wm = document.createElement("div");
+        wm.className = "watermark";
+        wm.textContent = "RAJNANDINI";
+
+        // Zoom on click
+        imgWrapper.addEventListener("click", () => {
+          openModal(item.imageLink, item.sku);
+        });
+
+        imgWrapper.appendChild(img);
+        imgWrapper.appendChild(wm);
 
         card.appendChild(titleEl);
         card.appendChild(skuEl);
-        card.appendChild(img);
-        card.appendChild(link);
+        card.appendChild(imgWrapper);
 
         resultsDiv.appendChild(card);
       });
     }
 
-    // Load CSV when page opens
-    window.addEventListener("load", loadCSV);
+    function openModal(url, altText) {
+      modalImage.src = url;
+      modalImage.alt = altText || "";
+      imageModal.classList.add("show");
+    }
+
+    function closeModal() {
+      imageModal.classList.remove("show");
+      modalImage.src = "";
+    }
+
+    modalClose.addEventListener("click", closeModal);
+    imageModal.addEventListener("click", (e) => {
+      if (e.target === imageModal) {
+        closeModal();
+      }
+    });
+
+    // Dark mode toggle with memory
+    const darkToggle = document.getElementById("darkToggle");
+
+    function applyTheme(theme) {
+      if (theme === "dark") {
+        document.body.classList.add("dark-mode");
+      } else {
+        document.body.classList.remove("dark-mode");
+      }
+    }
+
+    const savedTheme = localStorage.getItem("rf_theme");
+    if (savedTheme) {
+      applyTheme(savedTheme);
+    }
+
+    darkToggle.addEventListener("click", () => {
+      const isDark = document.body.classList.toggle("dark-mode");
+      localStorage.setItem("rf_theme", isDark ? "dark" : "light");
+    });
 
     // Input events
-    const skuInput = document.getElementById("skuInput");
-
     skuInput.addEventListener("keyup", function (e) {
       if (e.key === "Enter") {
         searchImages();
@@ -392,13 +687,15 @@
       }
     });
 
-    // Hide suggestions when clicking outside
     document.addEventListener("click", function (e) {
       const wrapper = document.querySelector(".input-wrapper");
       if (!wrapper.contains(e.target)) {
         hideSuggestions();
       }
     });
+
+    // Load CSV on startup
+    window.addEventListener("load", loadCSV);
   </script>
 </body>
 </html>
