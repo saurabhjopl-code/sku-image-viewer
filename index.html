@@ -296,6 +296,35 @@
     }
   });
 
+  function checkAccessTime() {
+  const nowUTC = new Date();
+  const istTime = new Date(nowUTC.getTime() + (330 * 60000)); // UTC+5:30
+
+  const hour = istTime.getHours(); // 0–23
+
+  // Allowed window: 09:00 (9 AM) to 20:00 (8 PM)
+  if (hour < 9 || hour >= 20) {
+    alert("Access allowed only between 09:00 AM – 08:00 PM IST.");
+    auth.signOut();
+  }
+}
+
+// Run every minute to enforce automatic logout
+setInterval(checkAccessTime, 60000);
+
+// Run immediately when user logs in
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("userEmail").textContent = user.email;
+    loginScreen.style.display = "none";
+    appScreen.style.display = "block";
+    checkAccessTime();  // Check immediately
+  } else {
+    appScreen.style.display = "none";
+    loginScreen.style.display = "block";
+  }
+});
+
   document.getElementById("loginButton").onclick = async () => {
     loginError.textContent = "";
     try {
@@ -442,3 +471,4 @@
 
 </body>
 </html>
+
